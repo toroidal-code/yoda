@@ -11,8 +11,8 @@ it to be installed (version 1.14+) along with
 [libpandoc](https://github.com/ShabbyX/libpandoc)
 
 Feature wishlist:
-- [ ] Markdown Support
-- [ ] Embedded LaTeX Support w/ MathJax
+- [X] Markdown Support
+- [X] Embedded LaTeX Support w/ MathJax
 - [ ] Site generation like [oredoc](https://github.com/smondet/oredoc)
 - [ ] YARD-style function annotation syntax
 - [ ] Typing done by [merlin](https://github.com/the-lambda-church/merlin)

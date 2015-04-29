@@ -38,21 +38,21 @@ let pandoc ?(size=1024) ?(user_data=null) ?(settings="{}") ~input_format ~output
   | Some s -> raise (PandocError s)
   | None   -> ()
 
-let _valid_language = foreign "valid_language" (string @-> returning int)
-let valid_language language =
-  match _valid_language language with
-  | 0 -> false
-  | _ -> true
+(* let _valid_language = foreign "valid_language" (string @-> returning int) *)
+(* let valid_language language = *)
+(*   match _valid_language language with *)
+(*   | 0 -> false *)
+(*   | _ -> true *)
 
 
-let _highlight =
-  foreign "highlight"
-    (int @-> string @-> string @-> int @-> funptr reader_t
-     @-> funptr writer_t @-> ptr void @-> returning void)
+(* let _highlight = *)
+(*   foreign "highlight" *)
+(*     (int @-> string @-> string @-> int @-> funptr reader_t *)
+(*      @-> funptr writer_t @-> ptr void @-> returning void) *)
 
-let highlight ?(size=1024) ?(user_data=null) language ?(output_format="html") ?(block=true) (reader : reader) (writer : writer) =
-  if not !started then start ();
-  _highlight size language output_format (match block with true -> 1 | false -> 0) reader writer user_data
+(* let highlight ?(size=1024) ?(user_data=null) language ?(output_format="html") ?(block=true) (reader : reader) (writer : writer) = *)
+(*   if not !started then start (); *)
+(*   _highlight size language output_format (match block with true -> 1 | false -> 0) reader writer user_data *)
 
 (* WARNING: UNSAFE CAN CAUSE SEGFAULTS length must always be minus one of expected to account for null-term *)
 let unsafe_char_ptr_blit_bytes src src_off dest dest_off len  =

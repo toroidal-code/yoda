@@ -8,6 +8,24 @@ Plugins:      DevFiles (0.4), META (0.4)
 BuildTools:   ocamlbuild
 BuildDepends: core, threads
 
+Library sedlexing
+  Modules: Sedlexing
+  Path: sedlex/src/lib
+  Install: false
+  BuildDepends: gen
+
+Library sedlex
+  FindlibName: sedlex
+  Modules: Sedlex_cset, Unicode63, Sedlex, Ppx_sedlex
+  Path: sedlex/src/syntax
+  Install: false
+
+Executable ppx_sedlex
+  Path: sedlex/src/syntax
+  MainIs: ppx_sedlex.ml
+  BuildDepends: sedlex
+  CompiledObject: best
+
 Library pandoc
   Path: src/pandoc
   Modules: Pandoc
@@ -18,8 +36,9 @@ Library pandoc
 Library process
  Path: src
  Modules: Process
- InternalModules: PygmentsHelper
- BuildDepends: pandoc, pygments, re2
+ BuildDepends: pandoc, pygments,
+               re2, sedlexing,
+               ppx_deriving.show
  Install: false
 
 Executable yoda

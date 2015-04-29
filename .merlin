@@ -1,12 +1,18 @@
 S src
 S src/pandoc
 S src/monadic
+s sedlex/src/lib
+s sedlex/src/syntax
 B _build/src
 B _build/src/pandoc
 B _build/src/monadic
+B _build/sedlex/src/lib
+B _build/sedlex/src/syntax
 PKG ctypes.foreign
 PKG core
 PKG cmdliner
 PKG re2
 PKG async
 PKG pygments
+PKG ppx_deriving.show
+FLG -ppx /home/kate/github/yoda/ppx_sedlex.native

@@ -28,16 +28,11 @@ let process copts format files =
   (* Format.printf "%aformat = %a\n" pp_copts copts pp_opt_id format; *)
   Pandoc.start ();
   List.iter files ~f:(fun file ->
-      let open Process in
-      let file_contents = In_channel.read_all file in
       (* (match check_and_determine file with *)
       (*  | `Ok t -> *)
       (*  | _ -> assert false) *)
-      let html,toc = Process.ocaml_to_html file_contents in
-      
-      print_endline("<html><head> 
-<script type=\"text/javascript\" src=\"https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\">
-</script> </head><body><div class=\"container\">" ^ html ^"</div></body></html>")
+      let html,toc = Process.ocaml_to_html (open_in file) in
+      print_endline html
     );
   Pandoc.stop ()
 

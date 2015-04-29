@@ -52,14 +52,14 @@ val pandoc :
   reader ->
   writer -> unit
 
-val valid_language : string -> bool 
+(* val valid_language : string -> bool  *)
 
-val highlight :
-  ?size:int ->
-  ?user_data:unit Ctypes.ptr ->
-  string ->
-  ?output_format:string ->
-  ?block:bool -> reader -> writer -> unit
+(* val highlight : *)
+(*   ?size:int -> *)
+(*   ?user_data:unit Ctypes.ptr -> *)
+(*   string -> *)
+(*   ?output_format:string -> *)
+(*   ?block:bool -> reader -> writer -> unit *)
 
 (* val reader_of_string : string -> reader *)
 val reader_of_bytes : bytes -> reader

@@ -1,0 +1,20 @@
+.id { }
+.kw { color: #07a }
+.kw1 { color: #07a }
+.kw2 { color: black }
+.kw3 { color: #690; }
+.kw4 { color: #905; }
+.comment { color: slategray }
+.string { color: #690 }
+.text { }
+.numeric { color: #905 }
+.directive { color : #0000aa } ;
+.escape { color: #409290 ; }
+.symbol { color: orange ;  }
+.symbol1 { color: #993300 ; font-weight: bold ; }
+.constant { color: #905; }
+pre { font-family: courier }
+pre.goodresult { background-color: #E0F0B2; margin-left: 3em; margin-right: 3em;  }
+pre.badresult { background-color: #FF8080; margin-left: 3em; margin-right: 3em; }
+/* Make code links visible: */
+a code { text-decoration: underline; }
