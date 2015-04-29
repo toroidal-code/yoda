@@ -1,0 +1,12 @@
+S src
+S src/pandoc
+S src/monadic
+B _build/src
+B _build/src/pandoc
+B _build/src/monadic
+PKG ctypes.foreign
+PKG core
+PKG cmdliner
+PKG re2
+PKG async
+PKG pygments

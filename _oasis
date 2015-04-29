@@ -1,0 +1,33 @@
+OASISFormat:  0.4
+Name:         yoda
+Version:      0.1
+Synopsis:     Yet another OCaml Documentation Authoring tool
+Authors:      Katherine Whitlock
+License:      MIT
+Plugins:      DevFiles (0.4), META (0.4)
+BuildTools:   ocamlbuild
+BuildDepends: core, threads
+
+Library pandoc
+  Path: src/pandoc
+  Modules: Pandoc
+  BuildDepends: ctypes.foreign
+  DllLib: libpandoc
+  Install: true
+
+Library process
+ Path: src
+ Modules: Process
+ InternalModules: PygmentsHelper
+ BuildDepends: pandoc, pygments, re2
+ Install: false
+
+Executable yoda
+  Path: src/
+  MainIs: yoda.ml
+  CompiledObject: best
+  BuildDepends: pandoc, cmdliner, process
+
+SourceRepository yoda
+  Type:     git
+  Location: https://github.com/toroidal-code/yoda
