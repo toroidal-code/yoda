@@ -5,7 +5,7 @@ module JSON = Yojson.Basic
 
 let pandoc_started = ref false
 
-let (<.>) f g = (fun x -> f (g x))
+let ( *.* ) f g = (fun x -> f (g x))
 let (>>>) f g = (fun x -> g (f x))
 
 (** The type to represent errors when determining
@@ -67,6 +67,16 @@ let settings : JSON.json =
       ];
   ]
 
+let toc_settings : JSON.json =
+  let open JSON in
+  `Assoc [
+    "writerOptions", `Assoc [
+        "writerStandalone", `Bool true;
+        "writerTemplate", `String "$toc$\n";
+        "writerTableOfContents", `Bool true
+      ];
+  ]
+  
 
 open Sedlexing
 let prev_buffer_offset = ref 0
@@ -216,10 +226,22 @@ let extra_scripts =
  "<script type=\"text/javascript\" src=\"https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>"
 
 
-let ocaml_to_html ?(template="basic") ?(highlighter=Pygments) chan =
+let ocaml_to_html ?(template="basic") ?(highlighter=Pygments) chan file_name =
+  let module_name =
+    let open Re2.Infix in
+    Filename.basename file_name |> String.capitalize
+    |> Re2.replace_exn ~/"\\.(\\w+)$" ~f:(fun _ -> "")
+  in
   let tokenized = lex_ocaml (Sedlexing.Utf8.from_channel chan) in
   (* List.iter ~f:(print_endline <.> show_raw) tokenized; *)
-  (* let toc = [](\* pandoc ~ @@ String.concat ~sep:"\n" @@ List.rev acc_toc *\\) "" *\) in *)
+  let convert_pandoc c =
+    (* Converted will always be at least the length of the original *)
+    let conversion_buffer = Buffer.create (String.length c) in
+    pandoc ~size:(String.length c) ~settings:(JSON.to_string settings)
+      ~input_format:"markdown" ~output_format:"html"
+      (reader_of_bytes c) (buffer_writer conversion_buffer);
+    Buffer.to_bytes conversion_buffer
+  in
   let process = function
     | Text t -> begin match highlighter with
         (* | Kate -> *)
@@ -233,21 +255,30 @@ let ocaml_to_html ?(template="basic") ?(highlighter=Pygments) chan =
         (*     let xml = Xtmpl_xml.to_string @@ Higlo.to_xml ~lang:"ocaml" t in *)
         (*     sprintf "<div class=\"highlight\"><pre>%s</pre></div>" xml *)
       end
-    | Comment c ->
-        (* Converted will always be at least the length of the original *)
-        let conversion_buffer = Buffer.create (String.length c) in
-        pandoc ~settings:(JSON.to_string settings)
-          ~input_format:"markdown" ~output_format:"html"
-          (reader_of_bytes c) (buffer_writer conversion_buffer);
-        Buffer.to_bytes conversion_buffer
+    | Comment c -> convert_pandoc c
+
   in
   let processed = List.map tokenized ~f:process in
   let content = String.concat processed in
+  let toc =
+    tokenized
+    |> List.filter_map ~f:(function Text t -> None | Comment c -> Some c)
+    |> String.concat ~sep:"\n" |> String.split_lines
+    |> List.filter ~f:(fun s -> (not @@ String.is_empty s) &&
+                                (Char.equal '#' @@ String.get s 0))
+    |> String.concat ~sep:"\n"
+    |> (fun c ->
+        let conversion_buffer = Buffer.create (String.length c) in
+         pandoc ~size:(String.length c) ~settings:(JSON.to_string toc_settings)
+           ~input_format:"markdown" ~output_format:"html"
+           (reader_of_bytes c) (buffer_writer conversion_buffer);
+         Buffer.to_bytes conversion_buffer)
+  in
   let template = In_channel.read_all ("templates/" ^ template ^ ".html") in
   let substitution = function
-    | "pagetitle" -> "Title"
+    | "pagetitle" -> module_name
     | "highlighting_css" -> In_channel.read_all "css/prism_pyg.css"
-    | "toc" -> ""
+    | "toc" -> toc
     | "content" -> content
     | "extra_scripts" -> extra_scripts
     | _ -> ""

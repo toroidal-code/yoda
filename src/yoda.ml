@@ -31,7 +31,7 @@ let process copts format files =
       (* (match check_and_determine file with *)
       (*  | `Ok t -> *)
       (*  | _ -> assert false) *)
-      let html,toc = Process.ocaml_to_html (open_in file) in
+      let html,toc = Process.ocaml_to_html (open_in file) file in
       print_endline html
     );
   Pandoc.stop ()
