@@ -13,23 +13,14 @@ let start = foreign "pandoc_init" (void @-> returning void)
 let stop = foreign "pandoc_exit" (void @-> returning void)
 
 type reader = char ptr -> int -> unit Ctypes.ptr -> int
-let reader_t = ( ptr char @-> int @-> ptr void @-> returning int)
+let reader_t = (ptr char @-> int @-> ptr void @-> returning int)
 
-type writer = string option -> int -> unit Ctypes.ptr -> unit
-let writer_t = (string_opt @-> int @-> ptr void @-> returning void)
+type writer = char ptr option -> int -> unit Ctypes.ptr -> unit
+let writer_t = (ptr_opt char @-> int @-> ptr void @-> returning void)
 
 let _pandoc = foreign "pandoc"
     (int @-> string @-> string @-> string @-> funptr reader_t
      @-> funptr writer_t @-> ptr void @-> returning string_opt)
-
-(* WARNING: UNSAFE CAN CAUSE SEGFAULTS length must always be minus one of expected to account for null-term *)
-let unsafe_char_ptr_blit_bytes src src_off dest dest_off len  =
-  let src = Bytes.sub src src_off len in
-  let dest = ref @@ dest +@ dest_off in
-  Bytes.iter (fun c ->
-      !dest <-@ c;
-      dest := !dest +@ 1) src;
-  !dest <-@ (Char.chr 0)
 
 let pandoc ?(size=1024) ?(user_data=null) ?(settings="{}") ~input_format ~output_format (reader : reader) (writer : writer) =
   if not !started then start ();
@@ -71,7 +62,7 @@ let reader_of_bytes bts : reader =
      else if !len >= buffer_len then begin
        let buffer_len = buffer_len - 1 in
        unsafe_char_ptr_blit_bytes bts 0 out 0 buffer_len;
-       len := !len - buffer_len;
+       len := !len - (buffer_len + 1);
        buffer_len
      end
      else if !len < buffer_len then begin
@@ -94,18 +85,34 @@ let reader_of_channel chan : reader =
        len + 1                  (* Compensate for previous offset *)
      end)
 
+(* let stdout_writer : writer = (fun in_buf len _ -> *)
+(*     match in_buf with *)
+(*     | Some ip -> begin *)
+(*         let arr = Array.make len (Uchar.of_int 0) in *)
+(*         for i = 0 to len - 1  do *)
+(*           let addr = ip +@ i in *)
+(*           let ival = !@ addr in *)
+(*           Array.set arr i (Uchar.of_int ival) *)
+(*         done; *)
+(*       end *)
+(*     | None -> () *)
+(*   ) *)
+
 let stdout_writer : writer = (fun in_buf len _ ->
     match in_buf with
-    | Some s ->
-      Printf.printf "%.*s" len s
+    | Some s -> print_string @@ string_from_ptr s ~length:len
     | None -> ()
   )
 
+
 let buffer_writer buffer : writer =
+  Buffer.clear buffer;
   (fun in_buf len _ ->
      match in_buf with
      | Some s ->
-       Buffer.add_bytes buffer s
+         string_from_ptr s ~length:len
+         |> Core.Std.String.copy
+         |> Buffer.add_string buffer
      | None -> ()
   )
 
@@ -115,6 +122,7 @@ let fprintf_writer ~(f : 'b -> ('a, 'b, unit) format -> 'a) output : writer =
     match in_buf with
     | Some s ->
       let bts = Bytes.create len in
+      let s = string_from_ptr s ~length:len in
       Bytes.blit_string s 0 bts 0 len;
       f output "%.*s" len bts
     | None -> ()
@@ -125,6 +133,7 @@ let printf_writer ~(f : ('a, 'b, unit) format -> 'a) output : writer =
     match in_buf with
     | Some s ->
       let bts = Bytes.create len in
+      let s = string_from_ptr s ~length:len in
       Bytes.blit_string s 0 bts 0 len;
       f output "%.*s" len bts
     | None -> ()
@@ -135,6 +144,7 @@ let ksprintf_writer ~(f : (string -> 'a) -> ('b, unit, string, 'a) format4 -> 'b
      match in_buf with
      | Some s ->
        let bts = Bytes.create len in
+       let s = string_from_ptr s ~length:len in
        Bytes.blit_string s 0 bts 0 len;
        f cont "%.*s" len bts
      | None -> ()
@@ -145,6 +155,7 @@ let kfprintf_writer ~(f : ('c -> 'a) -> 'c -> ('b, 'c, unit, 'a) format4 -> 'b) 
      match in_buf with
      | Some s ->
        let bts = Bytes.create len in
+       let s = string_from_ptr s ~length:len in
        Bytes.blit_string s 0 bts 0 len;
        f cont output "%.*s" len bts
      | None -> ()

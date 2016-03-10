@@ -30,7 +30,7 @@ type reader = char Ctypes.ptr -> int -> unit Ctypes.ptr -> int
   * @param ?user_data [ptr void] The same pointer passed as the last 
   *                             argument of the `pandoc` function.
   * @return void  *)
-type writer = string option -> int -> unit Ctypes.ptr -> unit
+type writer = char Ctypes.ptr option -> int -> unit Ctypes.ptr -> unit
 
 (** Calls `pandoc` with given input and output formats and streams.
   * @param ?size The size of the buffer in bytes. Defaults to 1024.
