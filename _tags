@@ -1,5 +1,6 @@
 # Sedlex ppx
-<src/process.ml>: ppx_sedlex
+<src/process.ml>: ppx_sedlex, rectypes
+<src/yoda.ml>: rectypes
 
 # Metaquot brings in a whole bunch of stuff that creates namespace clashes
 <sedlex/src/syntax/ppx_sedlex.ml{,i}>: pkg_ppx_tools.metaquot

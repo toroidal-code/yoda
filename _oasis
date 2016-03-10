@@ -37,8 +37,9 @@ Library process
  Path: src
  Modules: Process
  BuildDepends: pandoc, pygments,
-               re2, sedlexing,
-               ppx_deriving.show
+               re2, sedlex, sedlexing,
+               ppx_deriving.show,
+#               higlo, higlo.ocaml, xtmpl
  Install: false
 
 Executable yoda
